@@ -1,0 +1,22 @@
+apply plugin: 'edu.sc.seis.launch4j'
+
+buildscript {
+  repositories {
+    maven {
+		url 'https://plugins.gradle.org/m2/'
+      }
+  }
+  dependencies {
+    classpath 'gradle.plugin.edu.sc.seis.gradle:launch4j:1.6.1'
+  }
+}
+
+dependencies {
+    compile project(':apt-core')
+}
+
+launch4j {
+  mainClassName = 'apt.console.Main'
+  outfile = 'apt.exe'
+  headerType = 'console'
+}

@@ -1,0 +1,3 @@
+jar {
+	baseName = 'apt-core'
+}

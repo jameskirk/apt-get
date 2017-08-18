@@ -1,0 +1,36 @@
+Path in repository: /core-soft/protubuf/protobuf-2.5.0-r2.ebuild
+http://gentoovps.net/gentoo-updating-old-system/
+Repo: func - makeCache, download
+alias emerge='cd /cygdrive/c/Users/igolovin/Dropbox/Project/emerge/EmergeConsole/bin && java -cp "./../../EmergeBL/bin;./" emerge.console.Main'
+-ebuild_local (central, varez) 
+-ebuild_installed (one for central, varez)
+-src_local (one for central, varez)
+
+Reader: read (via cache->real file), writeDefault
+-cache_reader for ebuild_local
+-cache_reader for ebuild_installed
+-reader for src_local (no cache)
+
+Reader:
+userSettings (make.conf)
+use (use.conf)
+
+1. msi, msi.zip, (msi+other).zip from url
+2. msi, (msi+other) from torrent
+
+TODO: copyInstaller, copyRemover (emerge -Ñ 7zip)
+download ebuildRepository.7z from http to local (repositoryService.update) emerge --sync
+ebuild.SRC_URI download package.msi from http to local
+read regystry\uninstall and update installed.info file (emerge --init)
+
+find package tool (repositoryService.find)  emerge --search pdf ; emerge --searchdesc pdf
+UserSetting in file make.conf
+filter by linence
+
+console application (EmergeConsole) with flags
+integration console application with cygwin
+launch4java - to make java -> emerge.exe
+
+check package.msi by checksum
+
+wget.exe https://devmanual.gentoo.org//ebuild-writing/functions/index.html -P ./tt/LOL.html -e use_proxy=yes -e https_proxy=proxy3.t-systems.ru:3128
