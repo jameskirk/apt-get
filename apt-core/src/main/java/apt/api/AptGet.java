@@ -13,16 +13,21 @@ import apt.core.ActionHandler;
 import apt.core.InstallHandler;
 import apt.core.RemoveHandler;
 import apt.ebuild.EbuildFile;
+import apt.entity.Keyword;
 import apt.entity.PackageDetailsInfo;
 import apt.entity.PackageName;
 import apt.exception.InternalException;
 import apt.exception.UserException;
 import apt.misc.Logger;
+import apt.repo.LocalRepoPackages;
 import apt.repo.SearchCriteria;
+import apt.repo.entity.InstalledPackageEntry;
 import apt.system.BinUtils;
 import apt.util.ServiceLocator;
 
 public class AptGet {
+    
+    private LocalRepoPackages localRepoPakcages = new LocalRepoPackages();
 
     public void install(PackageName packageId) throws InternalException, UserException {
 	try {
@@ -47,9 +52,43 @@ public class AptGet {
     public List<PackageInfo> find(PackageName userInput) throws InternalException, UserException {
 	try {
 	    List<PackageInfo> retVal = new ArrayList<PackageInfo>();
-	    AptGetInfo aptGetInfo = new AptGetInfo();
-	    retVal = aptGetInfo.find(userInput);
-	    return retVal;
+		List<EbuildFile> ebuilds = localRepoPakcages.readMergedEbuildsByCriteria(userInput,
+			SearchCriteria.CONTAINS_NAME_ANY_VERSION);
+
+		// calculate available
+		for (EbuildFile ebuild : ebuilds) {
+		    PackageName ebuildPackageId = ebuild.getPackageId();
+		    PackageInfo packageInfo = findPackageInfo(retVal, ebuildPackageId);
+		    packageInfo.getAvailablePackages().add(ebuild.getPackageId());
+		}
+
+		InstalledPackages installedPackages = new InstalledPackages();
+		// calculate installed by windows installer
+		for (EbuildFile commonEbuild : commonEbuilds) {
+		    PackageName ebuildPackageName = commonEbuild.getPackageId();
+		    List<InstalledPackageEntry> installedList = installedPackages.getInstalledByRegistry(ebuildPackageName, commonEbuilds);
+		    for (InstalledPackageEntry installed : installedList) {
+			PackageInfo packageInfo = findPackageInfo(retVal, ebuildPackageName);
+			packageInfo.setHomepage(commonEbuild.getHomepage());
+			packageInfo.getInstalledPackages().add(new PackageName(ebuildPackageName.getCategory(), ebuildPackageName.getPackageName(),
+				installed.getPackageId().getVersion(), new Keyword("x86")));
+		    }
+		}
+
+		// calculate installed by manually
+		for (EbuildFile commonEbuild : commonEbuilds) {
+		    PackageName ebuildPackageName = commonEbuild.getPackageId();
+		    List<InstalledPackageEntry> installedList = installedPackages.getInstalledByManually(ebuildPackageName, commonEbuild,
+			    new Keyword("x86-noinstaller"));
+		    for (InstalledPackageEntry installed : installedList) {
+			PackageInfo packageInfo = findPackageInfo(retVal, ebuildPackageName);
+			packageInfo.setHomepage(commonEbuild.getHomepage());
+			packageInfo.getInstalledPackages().add(new PackageName(ebuildPackageName.getCategory(), ebuildPackageName.getPackageName(),
+				installed.getPackageId().getVersion(), new Keyword("x86-noinsaller")));
+		    }
+		}
+		return retVal;
+		
 	} catch (Exception e) {
 	    Logger.user("Internal error, can not find package " + userInput);
 	    throw new InternalException(e);
@@ -209,6 +248,24 @@ public class AptGet {
 			e.printStackTrace();
 		}
 	}
+    }
+    
+    
+    private PackageInfo findPackageInfo(List<PackageInfo> packageInfos, PackageName ebuildPackageId) {
+	PackageInfo retVal = new PackageInfo();
+	boolean packageInfoContains = false;
+	for (PackageInfo packageInfo : packageInfos) {
+	    if (packageInfo.getPackageName().getCategory().equals(ebuildPackageId.getCategory())
+		    && packageInfo.getPackageName().getPackageName().equals(ebuildPackageId.getPackageName())) {
+		packageInfoContains = true;
+		return packageInfo;
+	    }
+	}
+	if (!packageInfoContains) {
+	    packageInfos.add(retVal);
+	    retVal.setPackageName(new PackageName(ebuildPackageId.getCategory(), ebuildPackageId.getPackageName(), null));
+	}
+	return retVal;
     }
 
 }

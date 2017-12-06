@@ -2,21 +2,21 @@ package apt.util;
 
 import apt.conf.UserSettingsReader;
 import apt.ebuild.EbuildFile;
-import apt.repo.EbuildLocalRepositoryReader;
-import apt.repo.RepositoryReader;
+import apt.repo.LocalRepoPackages;
+import apt.repo.RepoPackages;
 
 public class ServiceLocator {
 
     private static volatile ServiceLocator instance;
     
-    private RepositoryReader<EbuildFile> ebuildRepositoryReader;
+    private RepoPackages<EbuildFile> ebuildRepositoryReader;
     
     //private LocalRepositoryReader<InstalledPackageEntry> installedRepositoryReader;
     
     private UserSettingsReader userSettingReader;
     
     public ServiceLocator() {
-	ebuildRepositoryReader = new EbuildLocalRepositoryReader();
+	ebuildRepositoryReader = new LocalRepoPackages();
 	//installedRepositoryReader = new InstalledRepositoryReader();
 	userSettingReader = new UserSettingsReader();
     }
@@ -34,7 +34,7 @@ public class ServiceLocator {
 	return localInstance;
     }
 
-    public RepositoryReader<EbuildFile> getEbuildRepositoryReader() {
+    public RepoPackages<EbuildFile> getEbuildRepositoryReader() {
         return ebuildRepositoryReader;
     }
 

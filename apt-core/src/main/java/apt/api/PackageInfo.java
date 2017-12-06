@@ -14,8 +14,6 @@ public class PackageInfo {
     
     private List<PackageName> installedPackages = new ArrayList<>();
     
-    private String homepage;
-
     public PackageName getPackageName() {
         return packageName;
     }
@@ -41,11 +39,7 @@ public class PackageInfo {
     }
     
     public String getHomepage() {
-        return homepage;
-    }
-
-    public void setHomepage(String homepage) {
-        this.homepage = homepage;
+        return "";
     }
 
     @Override
@@ -72,7 +66,7 @@ public class PackageInfo {
 
 	if (!availablePackages.isEmpty()) {
 	    retVal.append(whitespace + Logger.ANSI_GREEN + "Homepage:                 " 
-		    + Logger.ANSI_RESET + homepage + "\n");
+		    + Logger.ANSI_RESET + getHomepage() + "\n");
 	}
 	return retVal.toString();
 	

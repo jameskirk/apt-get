@@ -18,17 +18,17 @@ import apt.system.BinUtils;
 import apt.system.OsType;
 import apt.system.Path;
 
-public class EbuildLocalRepositoryReader implements RepositoryReader<EbuildFile> {
+public class LocalRepoPackages implements RepoPackages<EbuildFile> {
 
     private String ebuildRepositoryDir;
 
     private String cacheDbFilename = "cache.db";
 
-    public EbuildLocalRepositoryReader() {
+    public LocalRepoPackages() {
 	ebuildRepositoryDir = Configuration.ebuildRepositoryDir;
     }
 
-    public EbuildLocalRepositoryReader(String ebuildRepositoryDir) {
+    public LocalRepoPackages(String ebuildRepositoryDir) {
 	this.ebuildRepositoryDir = ebuildRepositoryDir;
     }
 
@@ -46,6 +46,15 @@ public class EbuildLocalRepositoryReader implements RepositoryReader<EbuildFile>
 	} else {
 	    return retVal.get(0);
 	}
+    }
+    
+    public List<EbuildFile> readMergedEbuildsByCriteria(PackageName packageId, SearchCriteria criteria) throws InternalException {
+	List<EbuildFile> ebuilds = readByCriteria(packageId,
+		SearchCriteria.CONTAINS_NAME_ANY_VERSION);
+	//TODO: merge with
+	List<EbuildFile> commonEbuilds = readAllCommonEbuilds();
+	return ebuilds;
+	
     }
 
     /**

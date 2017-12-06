@@ -5,7 +5,7 @@ import java.util.List;
 import apt.entity.PackageName;
 import apt.exception.InternalException;
 
-public interface RepositoryReader<T> {
+public interface RepoPackages<T> {
     
     public void cache() throws InternalException;
     

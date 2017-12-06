@@ -20,13 +20,13 @@ import apt.exception.UserException;
 import apt.hook.HookExecutor;
 import apt.misc.FileHelper;
 import apt.misc.Logger;
-import apt.repo.EbuildLocalRepositoryReader;
+import apt.repo.LocalRepoPackages;
 import apt.system.OsType;
 import apt.system.Path;
 
 public class AptGetInstall {
 
-    private EbuildLocalRepositoryReader ebuildLocalRepositoryReader = new EbuildLocalRepositoryReader();
+    private LocalRepoPackages ebuildLocalRepositoryReader = new LocalRepoPackages();
 
     private UserSettingsReader userSettingsReader = new UserSettingsReader();
 
