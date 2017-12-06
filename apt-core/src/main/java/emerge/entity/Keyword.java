@@ -17,6 +17,10 @@ public class Keyword implements Serializable {
     private boolean not = false;
     
     public Keyword(String value) {
+	if (value.isEmpty()) {
+	    this.value = "";
+	    return;
+	}
 	char flag = value.charAt(0);
 	if (flag == '~') {
 	    masked = true;

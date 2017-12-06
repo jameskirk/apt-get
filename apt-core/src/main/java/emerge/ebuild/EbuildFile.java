@@ -2,10 +2,13 @@ package emerge.ebuild;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import emerge.entity.EmergeVariable;
 import emerge.entity.Keyword;
 import emerge.entity.KeywordGroup;
 import emerge.entity.PackageName;
+import emerge.exception.UserException;
 
 public class EbuildFile {
 
@@ -16,6 +19,8 @@ public class EbuildFile {
     private String homepage;
 
     private String license;
+    
+    private List<KeywordGroup> defaultPath = new ArrayList<KeywordGroup>();
 
     private List<Keyword> keywords = new ArrayList<Keyword>();
 
@@ -98,7 +103,26 @@ public class EbuildFile {
     public void setRegistryName(String registryName) {
 	this.registryName = registryName;
     }
+    
+    public List<KeywordGroup> getDefaultPath() {
+        return defaultPath;
+    }
 
+    public void setDefaultPath(List<KeywordGroup> defaultPath) {
+        this.defaultPath = defaultPath;
+    }
+    
+    public String getDefaultPathCalculated(Keyword keywordForInstall) throws UserException {
+	Optional<KeywordGroup> group = getDefaultPath().stream()
+		.filter(x -> x.getKeywords().contains(keywordForInstall.getValue())).findFirst();
+	if (!group.isPresent()) {
+		return getDefaultPath().get(0).getValue();
+	} else {
+        	String uri = group.get().getValue();
+        	return uri;
+	}
+    }
+    
     @Override
     public String toString() {
 	StringBuilder pairToString = new StringBuilder();
@@ -120,6 +144,10 @@ public class EbuildFile {
 	}
 	pairToString.append("\nSRC_URL=");
 	for (KeywordGroup pair : srcUriList) {
+	    pairToString.append(pair.getKeywords() + " " + pair.getValue() + "\n");
+	}
+	pairToString.append("\nDEFAULT_PATH=");
+	for (KeywordGroup pair : defaultPath) {
 	    pairToString.append(pair.getKeywords() + " " + pair.getValue() + "\n");
 	}
 	return "\nPACKAGE=" + packageId + "\nDESCRIPTION=" + description + "\nHOMEPAGE=" + homepage + "\nLICENCE=" + license + "\n" 

@@ -23,11 +23,11 @@ public class EbuildReader {
 	 * 
 	 * @param ebuildId
 	 */
-	public EbuildFile read(PackageName ebuildId) throws InternalException {
+	public EbuildFile readConcreteEbuild(PackageName ebuildId) throws InternalException {
 		return readAny(ebuildId, true);
 	}
 	
-	public EbuildFile readInfo(PackageName ebuildId) throws InternalException {
+	public EbuildFile readCommonEbuild(PackageName ebuildId) throws InternalException {
 		return readAny(ebuildId, false);
 	}
 	
@@ -41,7 +41,7 @@ public class EbuildReader {
 				if (isEbuild) {
 				fileAsString = FileHelper.readFile(localRepository + FileHelper.getEbuildPath(ebuildId) + ".ebuild");
 				} else {
-					fileAsString = FileHelper.readFile(localRepository + FileHelper.getEbuildPathFirst(ebuildId) + "/info");
+					fileAsString = FileHelper.readFile(localRepository + FileHelper.getEbuildPathFirst(ebuildId) + "/common.ebuild");
 				}
 
 				ebuildFile.setDescription(readVariable(fileAsString, EbuildKeyword.DESCRIPTION.name())
@@ -85,6 +85,25 @@ public class EbuildReader {
 						ebuildFile.getSrcUriList().add(new KeywordGroup(useList, uri));
 					}
 				}
+				
+				
+				String defaultUrl = readVariable(fileAsString, EbuildKeyword.DEFAULT_PATH.name())
+					.replace(EbuildKeyword.DEFAULT_PATH.name() + "=\"", "").replace("\"", "");
+				defaultUrl = defaultUrl.replaceAll("^\\s+|\\s+$", "");
+        			if (!defaultUrl.contains("?")) {
+        				// link
+        				ebuildFile.getDefaultPath().add(new KeywordGroup(Collections.emptyList(), defaultUrl));
+        			} else {
+        				// x86 : link
+        				// amd64 : link2
+        				for (String srcUriItem : readSrcUri(defaultUrl)) {
+        					String useString = srcUriItem.split("\\?")[0].replace("\t", "");
+        					List<String> useList = Arrays.asList(useString.split("( )+"));
+        					String uri = srcUriItem.substring(srcUriItem.split("\\?")[0].length() + 1).replaceAll("\\s+", "");
+        
+        					ebuildFile.getDefaultPath().add(new KeywordGroup(useList, uri));
+        				}
+        			}
 
 				// optional
 				String registryName = readVariable(fileAsString, EbuildKeyword.NAME_IN_REGISTRY.name());

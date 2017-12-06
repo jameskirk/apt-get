@@ -42,6 +42,7 @@ public class InstallHandler implements IInstallHandler {
 	@Override
 	public final void execute(PackageName packageId) throws InternalException, UserException {
 		Logger.debug("install " + packageId);
+		this.packageId = packageId;
 		if (this.packageId == null) {
 			throw new UserException("illegal package name:" + packageId);
 		}
@@ -56,19 +57,19 @@ public class InstallHandler implements IInstallHandler {
 
 	@Override
 	public void checkIfInstalled() throws InternalException, UserException {
-		List<InstalledPackageEntry> entry = ServiceLocator.getInstance().getInstalledRepositoryReader()
-				.readByCriteria(packageId.toString(), SearchCriteria.EXACTLY_NAME_ANY_VERSION);
-		if (entry.size() >= 1) {
-			Logger.user("package " + entry.get(0).getPackageId() + " already installed");
-			throw new UserException();
-		}
+//		List<InstalledPackageEntry> entry = ServiceLocator.getInstance().getInstalledRepositoryReader()
+//				.readByCriteria(packageId.toString(), SearchCriteria.EXACTLY_NAME_ANY_VERSION);
+//		if (entry.size() >= 1) {
+//			Logger.user("package " + entry.get(0).getPackageId() + " already installed");
+//			throw new UserException();
+//		}
 	}
 
 	@Override
 	public void checkFlags() throws InternalException, UserException {
 		// compare keywords and use from userSettings and ebuildFile
 		UserSettings userSettings = getUserSettingReader().read();
-		EbuildFile ebuildFile = getEbuildReader().read(packageId);
+		EbuildFile ebuildFile = getEbuildReader().readConcreteEbuild(packageId);
 
 		// check keywords
 		List<Keyword> keywordsToUnmask = new ArrayList<Keyword>();
@@ -163,10 +164,10 @@ public class InstallHandler implements IInstallHandler {
 
 		variableMap.put(EmergeVariable.INSTALL_KEYWORD.name(), keywordForInstall.getValue());
 		variableMap.put(EmergeVariable.NAME_IN_REGISTRY.name(),
-				getEbuildReader().read(packageId).getRegistryName());
+				getEbuildReader().readConcreteEbuild(packageId).getRegistryName());
 
 		HookExecutor hookExecutor = new HookExecutor();
-		hookExecutor.execute(variableMap);
+		hookExecutor.executeInstall(variableMap);
 	}
 
 	@Override
@@ -181,7 +182,7 @@ public class InstallHandler implements IInstallHandler {
 			entry.setProductCode(variableMap.get(EmergeVariable.WINDOWS_PRODUCT_CODE.name()));
 		}
 
-		ServiceLocator.getInstance().getInstalledRepositoryReader().saveOrUpdate(entry);
+		//ServiceLocator.getInstance().getInstalledRepositoryReader().saveOrUpdate(entry);
 	}
 
 	public UserSettingsReader getUserSettingReader() {

@@ -34,3 +34,4 @@ launch4java - to make java -> emerge.exe
 check package.msi by checksum
 
 wget.exe https://devmanual.gentoo.org//ebuild-writing/functions/index.html -P ./tt/LOL.html -e use_proxy=yes -e https_proxy=proxy3.t-systems.ru:3128
+KEYWORDS = x86, x64, x86-noinstaller, x64-noinstaller

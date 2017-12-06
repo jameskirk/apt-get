@@ -3,23 +3,21 @@ package emerge.util;
 import emerge.conf.UserSettingsReader;
 import emerge.ebuild.EbuildFile;
 import emerge.repo.EbuildLocalRepositoryReader;
-import emerge.repo.InstalledRepositoryReader;
-import emerge.repo.LocalRepositoryReader;
-import emerge.repo.entity.InstalledPackageEntry;
+import emerge.repo.RepositoryReader;
 
 public class ServiceLocator {
 
     private static volatile ServiceLocator instance;
     
-    private LocalRepositoryReader<EbuildFile> ebuildRepositoryReader;
+    private RepositoryReader<EbuildFile> ebuildRepositoryReader;
     
-    private LocalRepositoryReader<InstalledPackageEntry> installedRepositoryReader;
+    //private LocalRepositoryReader<InstalledPackageEntry> installedRepositoryReader;
     
     private UserSettingsReader userSettingReader;
     
     public ServiceLocator() {
 	ebuildRepositoryReader = new EbuildLocalRepositoryReader();
-	installedRepositoryReader = new InstalledRepositoryReader();
+	//installedRepositoryReader = new InstalledRepositoryReader();
 	userSettingReader = new UserSettingsReader();
     }
 
@@ -36,13 +34,13 @@ public class ServiceLocator {
 	return localInstance;
     }
 
-    public LocalRepositoryReader<EbuildFile> getEbuildRepositoryReader() {
+    public RepositoryReader<EbuildFile> getEbuildRepositoryReader() {
         return ebuildRepositoryReader;
     }
 
-    public LocalRepositoryReader<InstalledPackageEntry> getInstalledRepositoryReader() {
-        return installedRepositoryReader;
-    }
+//    public LocalRepositoryReader<InstalledPackageEntry> getInstalledRepositoryReader() {
+//        return installedRepositoryReader;
+//    }
 
     public UserSettingsReader getUserSettingReader() {
         return userSettingReader;

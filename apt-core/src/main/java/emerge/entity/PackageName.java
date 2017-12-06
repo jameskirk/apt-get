@@ -9,11 +9,20 @@ public class PackageName implements PackageIdentifiable, Serializable {
     private String name = "";
     
     private String version = "";
+    
+    private Keyword keyword = new Keyword("");
 
     public PackageName(String category, String name, String version) {
 	this.category = category;
 	this.name = name;
 	this.version = version;
+    }
+    
+    public PackageName(String category, String name, String version, Keyword keyword) {
+	this.category = category;
+	this.name = name;
+	this.version = version;
+	this.keyword = keyword;
     }
 
     public String getCategory() {
@@ -40,6 +49,14 @@ public class PackageName implements PackageIdentifiable, Serializable {
         this.version = version;
     }
     
+    public Keyword getKeyword() {
+        return keyword;
+    }
+
+    public void setKeyword(Keyword keyword) {
+        this.keyword = keyword;
+    }
+
     @Override
     public boolean equals(Object obj) {
 	if (!(obj instanceof PackageName)) {

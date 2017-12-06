@@ -9,7 +9,7 @@ import emerge.exception.InternalException;
 
 public class HookExecutor {
     
-    public void execute(Map<String, String> variableMap) throws InternalException, UserException {
+    public void executeInstall(Map<String, String> variableMap) throws InternalException, UserException {
 	List<Hook> hooks = Arrays.asList(
 		new DownloadHook(variableMap),
 		new UnpackHook(variableMap),

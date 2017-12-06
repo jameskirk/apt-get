@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.omg.CORBA.Object;
+
 import emerge.ebuild.EbuildFile;
 import emerge.entity.Keyword;
 import emerge.entity.PackageName;
@@ -68,7 +70,24 @@ public class InstalledPackageEntry implements Serializable {
     public void setUse(List<Keyword> use) {
 	this.use = use;
     }
-
+    
+    public boolean equals(Object obj) {
+	if (!(obj instanceof InstalledPackageEntry)) {
+	    return false;
+	}
+	InstalledPackageEntry installedPackage = (InstalledPackageEntry) obj;
+	if (!this.getPackageId().equals(installedPackage.getPackageId())) {
+	    return false;
+	}
+	if (this.getKeyword() != null && !this.getKeyword().equals(installedPackage.getKeyword())) {
+	    return false;
+	}
+	if (this.getKeyword() == null && this.getKeyword() != null) {
+	    return false;
+	}
+	return true;
+    }
+    
     @Override
     public String toString() {
 	StringBuilder pairToString = new StringBuilder();

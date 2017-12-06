@@ -21,6 +21,8 @@ public class Configuration {
 
     /** PLEASE DEFINT PATH TO CYGWIN, NATIVE **/
     public static final String cygwinPath = "C:/cygwin64";
+    
+    public static final String C = "C:/";
 
     /**
      * PLEASE DEFINE PATH WHEN PROGRAM EMERGE INSTALLED !!! may be

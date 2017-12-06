@@ -37,11 +37,11 @@ public class RemoveHandler implements IRemoveHandler {
     }
     
     public void checkIfInstalled() throws InternalException, UserException {
-	InstalledPackageEntry entry = ServiceLocator.getInstance().getInstalledRepositoryReader().readExactlyOne(packageId);
-	if (entry == null) {
-	    throw new UserException("package " + packageId + " is not found in db file, can not remove");
-	}
-	installedEntry = entry;
+//	InstalledPackageEntry entry = ServiceLocator.getInstance().getInstalledRepositoryReader().readExactlyOne(packageId);
+//	if (entry == null) {
+//	    throw new UserException("package " + packageId + " is not found in db file, can not remove");
+//	}
+//	installedEntry = entry;
     }
     
     public void remove() throws InternalException, UserException {
@@ -55,7 +55,7 @@ public class RemoveHandler implements IRemoveHandler {
     }
 
     public void writeInInstalledDbFile() throws InternalException, UserException {
-	ServiceLocator.getInstance().getInstalledRepositoryReader().remove(packageId);
+//	ServiceLocator.getInstance().getInstalledRepositoryReader().remove(packageId);
     }
     
     private void removeCopying() throws InternalException, UserException {
