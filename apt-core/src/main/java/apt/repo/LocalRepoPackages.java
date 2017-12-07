@@ -3,8 +3,8 @@ package apt.repo;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 
+import apt.api.PackageInfo;
 import apt.conf.Configuration;
 import apt.ebuild.EbuildFile;
 import apt.ebuild.EbuildReader;
@@ -13,93 +13,56 @@ import apt.exception.InternalException;
 import apt.misc.FileHelper;
 import apt.misc.Logger;
 import apt.misc.NameDeterminer;
-import apt.repo.entity.RepositoryCacheFile;
 import apt.system.BinUtils;
 import apt.system.OsType;
 import apt.system.Path;
 
-public class LocalRepoPackages implements RepoPackages<EbuildFile> {
+public class LocalRepoPackages {
 
     private String ebuildRepositoryDir;
-
-    private String cacheDbFilename = "cache.db";
 
     public LocalRepoPackages() {
 	ebuildRepositoryDir = Configuration.ebuildRepositoryDir;
     }
 
-    public LocalRepoPackages(String ebuildRepositoryDir) {
-	this.ebuildRepositoryDir = ebuildRepositoryDir;
-    }
-
-    @Override
-    public void cache() throws InternalException {
-	RepositoryCacheFile cacheFile = initCacheFile();
-	getFileReader().write(RepositoryCacheFile.class, ebuildRepositoryDir + "/" + cacheDbFilename, cacheFile);
-    }
-
-    @Override
-    public EbuildFile readExactlyOne(PackageName packageId) throws InternalException {
-	List<EbuildFile> retVal = readByCriteria(packageId, SearchCriteria.EXACTLY_PACKAGE_ID);
-	if (retVal.size() != 1) {
-	    return null;
-	} else {
-	    return retVal.get(0);
-	}
-    }
+//    public EbuildFile readExactlyOne(PackageName packageId) throws InternalException {
+//	List<EbuildFile> retVal = readMergedEbuildsByCriteria(packageId, SearchCriteria.EXACTLY_PACKAGE_ID);
+//	if (retVal.size() != 1) {
+//	    return null;
+//	} else {
+//	    return retVal.get(0);
+//	}
+//    }
     
-    public List<EbuildFile> readMergedEbuildsByCriteria(PackageName packageId, SearchCriteria criteria) throws InternalException {
-	List<EbuildFile> ebuilds = readByCriteria(packageId,
-		SearchCriteria.CONTAINS_NAME_ANY_VERSION);
-	//TODO: merge with
-	List<EbuildFile> commonEbuilds = readAllCommonEbuilds();
-	return ebuilds;
+    /**
+     * packageId = 7zip , 7zip-4.9 , app/7zip , app/7zip-4.9
+     */
+    public List<PackageInfo> readMergedEbuildsByCriteria(PackageName packageId, SearchCriteria criteria) throws InternalException {
+	List<PackageInfo> packageInfos = readByCriteria(packageId, SearchCriteria.CONTAINS_NAME_ANY_VERSION);
+	for (PackageInfo pi: packageInfos) {
+	    if (pi.getCommonEbuild() != null) {
+		// merge
+    	    	for (EbuildFile ebuild: pi.getAvailablePackages()) {
+    	    	    if (pi.getCommonEbuild().getHomepage() != null) {
+    	    		ebuild.setHomepage(pi.getCommonEbuild().getHomepage());
+    	    	    }
+    	    	    if (pi.getCommonEbuild().getDescription() != null) {
+	    		ebuild.setDescription(pi.getCommonEbuild().getDescription());
+	    	    }
+    	    	    // TODO: for other variables
+    	    	}
+	    }
+	}
+	return packageInfos;
 	
     }
 
     /**
      * packageId = 7zip , 7zip-4.9 , app/7zip , app/7zip-4.9
      */
-    @Override
-    public List<EbuildFile> readByCriteria(PackageName packageId, SearchCriteria criteria) throws InternalException {
-	//PackageName packageId = NameDeterminer.parseCategoryNameVersion(userInput);
-	List<EbuildFile> retVal = new ArrayList<EbuildFile>();
-	if (packageId == null) {
-	    throw new InternalException("packageId can not be null");
-	}
-	RepositoryCacheFile cacheFile = getFileReader().read(RepositoryCacheFile.class, ebuildRepositoryDir + "/" + cacheDbFilename);
-
-	retVal.addAll(getEbuildFilesByCache(packageId, cacheFile, criteria));
-	return retVal;
-    }
-
-    @Override
-    public List<EbuildFile> readAll() throws InternalException {
-	RepositoryCacheFile cacheFile = getFileReader().read(RepositoryCacheFile.class, ebuildRepositoryDir + "/" + cacheDbFilename);
-	return getEbuildFilesByCache(new PackageName("", "", ""), cacheFile, SearchCriteria.CONTAINS_NAME_ANY_VERSION);
-    }
-
-    public List<EbuildFile> readAllCommonEbuilds() throws InternalException {
-	RepositoryCacheFile cacheFile = getFileReader().read(RepositoryCacheFile.class, ebuildRepositoryDir + "/" + cacheDbFilename);
-	return getInfoFilesByCache(new PackageName("", "", ""), cacheFile);
-    }
-
-    @Override
-    public void saveOrUpdate(EbuildFile t) throws InternalException {
-	throw new UnsupportedOperationException("can not write something in ebuild repo");
-    }
-
-    @Override
-    public void remove(PackageName packageId) throws InternalException {
-	BinUtils.rm(ebuildRepositoryDir + FileHelper.getEbuildPath(packageId));
-    }
-
-    public Serializer getFileReader() {
-	return new Serializer();
-    }
-
-    protected RepositoryCacheFile initCacheFile() {
-	RepositoryCacheFile cacheFile = new RepositoryCacheFile();
+    private List<PackageInfo> readByCriteria(PackageName packageId, SearchCriteria criteria) throws InternalException {
+	List<PackageInfo> retVal = new ArrayList<PackageInfo>();
+	
 	File ebuildRepoDir = new File(new Path(ebuildRepositoryDir, OsType.UNIX).getNativeValue());
 
 	for (String category : ebuildRepoDir.list()) {
@@ -108,96 +71,61 @@ public class LocalRepoPackages implements RepoPackages<EbuildFile> {
 
 		for (String packageName : new File(categoryPath).list()) {
 		    String packageNamePath = ebuildRepoDir + "/" + category + "/" + packageName;
-		    if (new File(packageNamePath).exists()) {
-
+		    if (new File(packageNamePath).isDirectory()) {
+			
+			PackageInfo packageInfo = new PackageInfo();
 			for (String ebuildFilename : new File(packageNamePath).list()) {
 			    String ebuildPath = ebuildRepoDir + "/" + category + "/" + packageName + "/" + ebuildFilename;
-			    if (new File(ebuildPath).exists() && new File(ebuildPath).isFile()
-				    && new File(ebuildPath).getPath().endsWith(".ebuild")) {
+			    if (ebuildFilename.startsWith(packageName) && new File(ebuildPath).isFile() && new File(ebuildPath).getPath().endsWith(".ebuild")) {
+				String version = NameDeterminer.parseCategoryNameVersion(ebuildFilename.replace(".ebuild", "")).getVersion();
 
-				if (!cacheFile.getCategoryPackageMap().containsKey(category)) {
-				    cacheFile.getCategoryPackageMap().put(category, new ArrayList<String>());
+				if (criteria == SearchCriteria.CONTAINS_NAME_ANY_VERSION) {
+				    if ((!packageId.getCategory().isEmpty() && category.contains(packageId.getCategory()) || packageId.getCategory().isEmpty())
+					    && (!packageId.getPackageName().isEmpty() && packageName.contains(packageId.getPackageName()) || packageId.getPackageName().isEmpty())) {
+					
+					PackageName concretePackageId = new PackageName(category, packageName, version);
+					EbuildFile ebuild = new EbuildReader().readConcreteEbuild(concretePackageId);
+					EbuildFile commonEbuild = new EbuildReader().readConcreteEbuild(concretePackageId);
+					packageInfo.getAvailablePackages().add(ebuild);
+					packageInfo.setCommonEbuild(commonEbuild);
+				    }
+				} else if (criteria == SearchCriteria.EXACTLY_NAME_ANY_VERSION) {
+				    if ((!packageId.getCategory().isEmpty() && category.equals(packageId.getCategory()) || packageId.getCategory().isEmpty())
+					    && (!packageId.getPackageName().isEmpty() && packageName.equals(packageId.getPackageName()))) {
+					
+					PackageName concretePackageId = new PackageName(category, packageName, version);
+					EbuildFile ebuild = new EbuildReader().readConcreteEbuild(concretePackageId);
+					EbuildFile commonEbuild = new EbuildReader().readConcreteEbuild(concretePackageId);
+					packageInfo.getAvailablePackages().add(ebuild);
+					packageInfo.setCommonEbuild(commonEbuild);
+				    }
+				}else if (criteria == SearchCriteria.EXACTLY_PACKAGE_ID) {
+				    if ((!packageId.getCategory().isEmpty() && category.equals(packageId.getCategory()) || packageId.getCategory().isEmpty())
+					    && (!packageId.getPackageName().isEmpty() && packageName.equals(packageId.getPackageName()))
+					    && (!packageId.getVersion().isEmpty() && version.equals(packageId.getVersion()))) {
+					
+					PackageName concretePackageId = new PackageName(category, packageName, version);
+					EbuildFile ebuild = new EbuildReader().readConcreteEbuild(concretePackageId);
+					EbuildFile commonEbuild = new EbuildReader().readConcreteEbuild(concretePackageId);
+					packageInfo.getAvailablePackages().add(ebuild);
+					packageInfo.setCommonEbuild(commonEbuild);
+				    }
 				}
-				if (!cacheFile.getCategoryPackageMap().get(category).contains(packageName)) {
-				    cacheFile.getCategoryPackageMap().get(category).add(packageName);
-				}
-
-				String version = NameDeterminer.parseCategoryNameVersion(ebuildFilename.replace(".ebuild", ""))
-					.getVersion();
-
-				if (!cacheFile.getCategoryAndPackageVersionMap().containsKey(category + "/" + packageName)) {
-				    cacheFile.getCategoryAndPackageVersionMap().put(category + "/" + packageName, new ArrayList<String>());
-				}
-				List<String> versionList = cacheFile.getCategoryAndPackageVersionMap().get(category + "/" + packageName);
-				versionList.add(version);
-
-				Logger.debug("put to cache.db: " + category + "/" + packageName + "/" + ebuildFilename);
-
 			    }
+			}
+			if (!packageInfo.getAvailablePackages().isEmpty()) {
+			    retVal.add(packageInfo);
 			}
 		    }
 		}
 	    }
 	}
-	return cacheFile;
-    }
 
-    protected List<EbuildFile> getEbuildFilesByCache(PackageName packageId, RepositoryCacheFile cacheFile, SearchCriteria criteria)
-	    throws InternalException {
-	List<EbuildFile> retVal = new ArrayList<EbuildFile>();
-	for (Entry<String, List<String>> entry : cacheFile.getCategoryPackageMap().entrySet()) {
-	    String realCategory = entry.getKey();
-
-	    // category = category
-	    if (packageId.getCategory().isEmpty() || packageId.getCategory().equals(realCategory)) {
-		for (String realPackageName : entry.getValue()) {
-
-		    // package name = package name
-		    if (packageId.getPackageName().isEmpty()
-			    || (criteria == SearchCriteria.EXACTLY_PACKAGE_ID && realPackageName.equals(packageId.getPackageName())
-				    || criteria == SearchCriteria.CONTAINS_NAME_ANY_VERSION
-					    && realPackageName.contains(packageId.getPackageName()))) {
-
-			List<EbuildFile> availablePackages = new ArrayList<EbuildFile>();
-			for (String realVersion : cacheFile.getCategoryAndPackageVersionMap().get(realCategory + "/" + realPackageName)) {
-
-			    // package version = package version
-			    if (packageId.getVersion().isEmpty() || realVersion.equals(packageId.getVersion())) {
-				availablePackages.add(new EbuildReader().readConcreteEbuild(new PackageName(realCategory, realPackageName, realVersion)));
-			    }
-
-			}
-
-			retVal.addAll(availablePackages);
-
-		    }
-		}
-	    }
-
-	}
 	return retVal;
     }
 
-    protected List<EbuildFile> getInfoFilesByCache(PackageName packageId, RepositoryCacheFile cacheFile) throws InternalException {
-	List<EbuildFile> retVal = new ArrayList<EbuildFile>();
-	for (Entry<String, List<String>> entry : cacheFile.getCategoryPackageMap().entrySet()) {
-	    String realCategory = entry.getKey();
-
-	    // category = category
-	    if (packageId.getCategory().isEmpty() || packageId.getCategory().equals(realCategory)) {
-		for (String realPackageName : entry.getValue()) {
-
-		    // package name = package name
-		    if (packageId.getPackageName().isEmpty() || realPackageName.contains(packageId.getPackageName())) {
-
-			retVal.add(new EbuildReader().readCommonEbuild(new PackageName(realCategory, realPackageName, "")));
-
-		    }
-		}
-	    }
-
-	}
-	return retVal;
+    public void remove(PackageName packageId) throws InternalException {
+	BinUtils.rm(ebuildRepositoryDir + FileHelper.getEbuildPath(packageId));
     }
 
 }

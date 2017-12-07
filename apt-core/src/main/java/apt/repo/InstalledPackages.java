@@ -1,4 +1,4 @@
-package apt.api;
+package apt.repo;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import apt.conf.Configuration;
 import apt.ebuild.EbuildFile;
+import apt.ebuild.InstalledEbuildFile;
 import apt.entity.Keyword;
 import apt.entity.PackageName;
 import apt.entity.WindowsRegistryEntry;
@@ -20,7 +21,7 @@ import apt.repo.entity.InstalledPackageEntry;
 
 public class InstalledPackages {
 
-    private List<InstalledPackageEntry> installedPackages = new ArrayList<InstalledPackageEntry>();
+    private List<InstalledEbuildFile> installedPackages = new ArrayList<InstalledEbuildFile>();
 
     public boolean isInstalledByRegistry(PackageName packageId, List<EbuildFile> ebuildFiles) throws InternalException {
 	List<WindowsRegistryEntry> registryEntries = WinRegistry.getRegistryEntriesWindows();
@@ -31,10 +32,10 @@ public class InstalledPackages {
 		if (ebuild.getRegistryName() != null && registryEntry.getDisplayName() != null) {
 		    Pattern p = Pattern.compile(ebuild.getRegistryName());
 		    if (FileHelper.isFindByPattern(registryEntry.getDisplayName(), p)) {
-			InstalledPackageEntry entry = new InstalledPackageEntry();
+			InstalledEbuildFile entry = new InstalledEbuildFile();
 			entry.setPackageId(ebuild.getPackageId());
 			entry.getPackageId().setVersion(registryEntry.getDisplayVersion());
-			entry.setProductCode(registryEntry.getProductCode());
+			entry.setInstallRegistryProductCode(registryEntry.getProductCode());
 			if (!installedPackages.contains(entry)) {
 			    installedPackages.add(entry);
 			    // copy ebuild
@@ -49,7 +50,7 @@ public class InstalledPackages {
 	return false;
     }
 
-    public List<InstalledPackageEntry> getInstalledByRegistry(PackageName packageId, List<EbuildFile> ebuildFiles)
+    public List<InstalledEbuildFile> getInstalledByRegistry(PackageName packageId, List<EbuildFile> ebuildFiles)
 	    throws InternalException {
 	List<WindowsRegistryEntry> registryEntries = WinRegistry.getRegistryEntriesWindows();
 	installedPackages.clear();
@@ -60,10 +61,10 @@ public class InstalledPackages {
 			&& ebuild.getRegistryName() != null && registryEntry.getDisplayName() != null) {
 		    Pattern p = Pattern.compile(ebuild.getRegistryName());
 		    if (FileHelper.isFindByPattern(registryEntry.getDisplayName(), p)) {
-			InstalledPackageEntry entry = new InstalledPackageEntry();
+			InstalledEbuildFile entry = new InstalledEbuildFile();
 			entry.setPackageId(ebuild.getPackageId());
 			entry.getPackageId().setVersion(registryEntry.getDisplayVersion());
-			entry.setProductCode(registryEntry.getProductCode());
+			entry.setInstallRegistryProductCode(registryEntry.getProductCode());
 			if (!installedPackages.contains(entry)) {
 			    installedPackages.add(entry);
 			    // copy ebuild
@@ -87,7 +88,7 @@ public class InstalledPackages {
 	}
     }
 
-    public List<InstalledPackageEntry> getInstalledByManually(PackageName packageId, EbuildFile ebuildFile, Keyword keywordForInstall)
+    public List<InstalledEbuildFile> getInstalledByManually(PackageName packageId, EbuildFile ebuildFile)
 	    throws InternalException, UserException {
 	installedPackages.clear();
 	String defaultPath = ebuildFile.getDefaultPathCalculated(keywordForInstall);
@@ -107,7 +108,7 @@ public class InstalledPackages {
 	for (String dir : directories) {
 	    String version = dir.substring(programName.length(), dir.length());
 	    if (!version.isEmpty()) {
-        	    InstalledPackageEntry entry = new InstalledPackageEntry();
+		InstalledEbuildFile entry = new InstalledEbuildFile();
         	    entry.setPackageId(ebuildFile.getPackageId());
         	    entry.getPackageId().setVersion(version);
 	    }
