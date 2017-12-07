@@ -23,7 +23,11 @@ import apt.util.ServiceLocator;
 public class AptGet {
     
     private LocalRepoPackages localRepoPakcages = new LocalRepoPackages();
-
+    
+    public AptGet() {
+    	initConfigurationFiles();
+    }
+    
     public void install(PackageName packageId) throws InternalException, UserException {
 	throw new UnsupportedOperationException();
     }
@@ -49,34 +53,6 @@ public class AptGet {
 	throw new UnsupportedOperationException();
     }
 
-//    private PackageName recognize(PackageName userInput, boolean useLatestVersion, boolean useInstalledVersion)
-//	    throws InternalException, UserException {
-//	List<PackageInfo> infos = findQuiet(userInput, SearchCriteria.EXACTLY_NAME_ANY_VERSION);
-//	if (infos.isEmpty()) {
-//	    Logger.user("package: " + userInput + " not found in repository");
-//	    new UserException();
-//	}
-//	if (infos.size() > 1) {
-//	    Logger.user("please specify package name in special format, e.g 'app-arch/p7zip'");
-//	    infos.stream().forEach(x -> Logger.debug(x.toString()));
-//	    throw new UserException();
-//	}
-//	String version = userInput.getVersion();
-//	if (useLatestVersion && "".equals(version)) {
-//	    List<String> versions = new ArrayList();
-//	    infos.get(0).getAvailablePackages().forEach(e-> versions.add(e.getPackageId().getVersion()));
-//	    version = versions.get(versions.size() - 1);
-//	}
-//	if (useInstalledVersion && "".equals(version)) {
-//	    if (infos.get(0).getInstalledPackages().isEmpty()) {
-//		Logger.user("package is not installed:" + userInput);
-//		throw new UserException();
-//	    }
-//	    version = infos.get(0).getInstalledPackage().getPackageId().getVersion();
-//	}
-//	return new PackageName(infos.get(0).getCategory(), infos.get(0).getPackageName(), version);
-//    }
-
     public void sync() throws InternalException, UserException {
 	try {
 	    Logger.user(">>> Sync with central repository");
@@ -101,16 +77,6 @@ public class AptGet {
 	    throw new InternalException(e);
 	}
 
-    }
-
-    public void firstInit() throws InternalException, UserException {
-	try {
-	    Logger.user(">>> First initialization");
-	    Logger.user("Initialization successful");
-	} catch (RuntimeException e) {
-	    Logger.user("Initialization failed");
-	    throw new InternalException(e);
-	}
     }
 
     private List<PackageInfo> findQuiet(PackageName packageId, SearchCriteria searchCriteria) throws InternalException, UserException {

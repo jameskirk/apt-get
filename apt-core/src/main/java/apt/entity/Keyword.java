@@ -16,6 +16,8 @@ public class Keyword implements Serializable {
     
     private boolean not = false;
     
+    private boolean question = false;
+    
     public Keyword(String value) {
 	if (value.isEmpty()) {
 	    this.value = "";
@@ -37,6 +39,12 @@ public class Keyword implements Serializable {
 	if (flag == '!') {
 	    not = true;
 	    value = value.substring(1);
+	}
+	if (flag == '?') {
+	    question = true;
+	    if (value.length() >= 1) { 
+	    	value = value.substring(1);
+	    }
 	}
 	this.value = value;
     }
@@ -80,8 +88,15 @@ public class Keyword implements Serializable {
     public void setNot(boolean not) {
         this.not = not;
     }
+    public boolean isQuestion() {
+		return question;
+	}
 
-    public boolean isNoPrefix() {
+	public void setQuestion(boolean question) {
+		this.question = question;
+	}
+
+	public boolean isNoPrefix() {
 	return !masked && !plus && !minus && !not;
     }
     

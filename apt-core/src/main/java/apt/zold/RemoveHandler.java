@@ -1,3 +1,4 @@
+package apt.zold;
 //package apt.core;
 //
 //import apt.conf.Configuration;

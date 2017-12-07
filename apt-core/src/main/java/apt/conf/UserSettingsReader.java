@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import apt.entity.EmergeVariable;
+import apt.entity.AptGetKeyword;
 import apt.entity.Keyword;
 import apt.exception.InternalException;
 import apt.misc.FileHelper;
@@ -22,7 +22,7 @@ public class UserSettingsReader {
 	settings.setAcceptKeywords(processedKeywords);
 	
 	List<Keyword> processedUse = new ArrayList<Keyword>();
-	readVariableList(fileAsString, EmergeVariable.USE.name()).stream().forEach(x -> processedUse.add(new Keyword(x)));
+	readVariableList(fileAsString, AptGetKeyword.USE.name()).stream().forEach(x -> processedUse.add(new Keyword(x)));
 	settings.setUse(processedUse);
 	
 	settings.setAcceptLicense(readVariableList(
