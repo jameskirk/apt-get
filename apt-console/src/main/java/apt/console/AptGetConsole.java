@@ -23,7 +23,7 @@ public class AptGetConsole {
 		if ("sync".equals(args[0])) {
 		    aptGet.sync();
 		} else if ("init".equals(args[0])) {
-		    aptGet.firstInit();
+		    //TODO
 		} else {
 		    System.out.println("unknown command");
 		}
