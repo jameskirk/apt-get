@@ -4,10 +4,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import apt.api.PackageInfo;
 import apt.conf.Configuration;
 import apt.ebuild.EbuildFile;
 import apt.ebuild.EbuildReader;
+import apt.entity.PackageInfo;
 import apt.entity.PackageName;
 import apt.exception.InternalException;
 import apt.misc.FileHelper;

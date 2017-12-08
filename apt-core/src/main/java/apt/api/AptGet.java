@@ -10,7 +10,9 @@ import java.util.List;
 
 import apt.conf.Configuration;
 import apt.ebuild.InstalledEbuildFile;
+import apt.entity.PackageInfo;
 import apt.entity.PackageName;
+import apt.entity.ProgrammInfo;
 import apt.exception.InternalException;
 import apt.exception.UserException;
 import apt.misc.Logger;

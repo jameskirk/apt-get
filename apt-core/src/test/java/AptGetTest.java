@@ -3,8 +3,8 @@ import java.util.List;
 import org.junit.Test;
 
 import apt.api.AptGet;
-import apt.api.ProgrammInfo;
 import apt.entity.PackageName;
+import apt.entity.ProgrammInfo;
 import apt.exception.InternalException;
 import apt.exception.UserException;
 

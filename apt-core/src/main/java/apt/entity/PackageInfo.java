@@ -1,10 +1,9 @@
-package apt.api;
+package apt.entity;
 
 import java.util.List;
 
 import apt.ebuild.EbuildFile;
 import apt.ebuild.InstalledEbuildFile;
-import apt.entity.PackageName;
 
 public class PackageInfo {
     
